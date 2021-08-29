@@ -78,7 +78,7 @@ def test_create_game(client):
     )
     assert response_7.status_code == 201
     game_round_1 = response_7.json()
-    assert game_round_1["voteResults"] == [0, 0]
+    assert game_round_1["numVotes"] == 0
 
     # A Participant can't vote
     payload = {"verdict": False}
@@ -98,7 +98,7 @@ def test_create_game(client):
     )
     assert response_8.status_code == 201
     game_round_1 = response_8.json()
-    assert game_round_1["voteResults"] == [1, 0]
+    assert game_round_1["numVotes"] == 1
 
     # Can't vote twice
     payload = {"verdict": True}
@@ -119,7 +119,7 @@ def test_create_game(client):
     assert response_10.status_code == 201
     game_round_1 = response_10.json()
 
-    assert game_round_1["voteResults"] == [2, 0]
+    assert game_round_1["numVotes"] == 2
     assert game_round_1["status"] == "finished"
 
     response_11 = client.get(

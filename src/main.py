@@ -33,7 +33,7 @@ async def error_handling_middleware(request: Request, call_next):
             content={"error": "Not found"},
             status_code=status.HTTP_404_NOT_FOUND,
         )
-    except ValueError:
+    except ValueError as a:
         return JSONResponse(
             content={"error": "Value error"},
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,

@@ -145,11 +145,8 @@ class RoundModel(Base):
         return {self.player_for, self.player_against}
 
     @property
-    def vote_results(self) -> Tuple[int, int]:
-        total_votes = len(self.votes)
-        total_true_votes = len([_ for _ in self.votes if _.verdict is True])
-
-        return total_true_votes, total_votes - total_true_votes
+    def num_votes(self):
+        return len(self.votes)
 
 
 class VoteModel(Base):

@@ -171,13 +171,14 @@ def add_vote_to_round(
         if (len(game_round.votes) + 1) >= (len(game_round.game.players) - 2):
             game_round.status = Status.FINISHED
 
-            total_true_votes, total_false_votes = game_round.vote_results
+            total_true_votes = sum(1 for _ in game_round.votes if _.verdict is True)
+            total_false_votes = sum(1 for _ in game_round.votes if _.verdict is False)
             if total_true_votes != total_false_votes:
                 verdict = total_true_votes > total_false_votes
                 game_round.verdict = verdict
                 if verdict is True:
                     game_round.player_for.score += 1
                 else:
-                    game_round.player_against.score +=1
+                    game_round.player_against.score += 1
 
     return game_round

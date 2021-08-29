@@ -77,7 +77,7 @@ class GameRound(CamelModel):
     created_at: datetime
     player_for: Player
     player_against: Player
-    vote_results: Tuple[int, int]
+    num_votes: int
 
     class Config:
         orm_mode = True
