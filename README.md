@@ -2,6 +2,7 @@
 `python3 -m venv venv`  
 `source venv/bin/activate`  
 `python ./bin/run_locally.py`  
+http://localhost:8000/docs  
 
 ## Game Workflow
 
