@@ -23,6 +23,7 @@ from src.use_cases import (
     join_game,
     info_from_jwt_payload,
     create_game_round,
+    add_vote_to_round,
 )
 
 router = APIRouter()
@@ -153,6 +154,7 @@ def vote_round_handler(
     session_info: Tuple[GameModel, PlayerModel] = Depends(info_from_request),
 ):
     game, player = session_info
+    return add_vote_to_round(db_session, game.current_round, player, vote.verdict)
 
 
 """

@@ -24,7 +24,9 @@ def get_engine():
 
 
 def get_session_local():
-    return scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=get_engine()))()
+    return scoped_session(
+        sessionmaker(autocommit=False, autoflush=False, bind=get_engine())
+    )()
 
 
 def get_db():

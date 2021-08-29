@@ -156,7 +156,7 @@ def select_participants(candidates: List[Candidate]) -> Tuple[int, int]:
 
 def add_vote_to_round(
     db_session: Session, game_round: RoundModel, player: PlayerModel, verdict: bool
-):
+) -> RoundModel:
 
     if player in game_round.participants:
         raise ValueError("Participants can't vote")
@@ -164,15 +164,15 @@ def add_vote_to_round(
         raise ValueError("You already voted")
 
     with transaction(db_session):
-        vote = VoteModel(verdict=verdict, player=player)
+        vote = VoteModel(verdict=verdict, player=player, round=game_round)
         db_session.add(vote)
         db_session.flush()
 
-        if len(game_round.votes) >= len(game_round.game.players) - 2:
+        if (len(game_round.votes) + 1) >= (len(game_round.game.players) - 2):
             game_round.status = Status.FINISHED
 
             total_true_votes, total_false_votes = game_round.vote_results
             if total_true_votes != total_false_votes:
                 game_round.verdict = total_true_votes > total_false_votes
 
-    return vote
+    return game_round

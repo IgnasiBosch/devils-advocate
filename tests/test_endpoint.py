@@ -57,20 +57,70 @@ def test_create_game(client):
     game = response_4.json()
     assert len(game["players"]) == 3
 
+    # Joining a Game
+    payload = {"player": {"name": "Alexander Cullen"}}
+    response_5 = client.post(game.get("joinLink"), json=payload)
+    assert response_5.status_code == 201
+    game = response_5.json()
+    assert len(game["players"]) == 4
+
     # Only the master of the game can start it
-    response_5 = client.post(
+    response_6 = client.post(
         "/game/rounds",
         cookies={GAME_SESSION_KEY: response_2.cookies.get(GAME_SESSION_KEY)},
     )
-    assert response_5.status_code == 401
+    assert response_6.status_code == 401
 
     # Start round
-    response_6 = client.post(
+    response_7 = client.post(
         "/game/rounds",
         cookies={GAME_SESSION_KEY: response_1.cookies.get(GAME_SESSION_KEY)},
     )
-    assert response_6.status_code == 201
-    game_round_1 = response_6.json()
+    assert response_7.status_code == 201
+    game_round_1 = response_7.json()
+    assert game_round_1["voteResults"] == [0, 0]
+
+    # A Participant can't vote
+    payload = {"verdict": False}
+    response_8 = client.post(
+        "/game/round/vote",
+        json=payload,
+        cookies={GAME_SESSION_KEY: response_2.cookies.get(GAME_SESSION_KEY)},
+    )
+    assert response_8.status_code == 422
+
+    # Voting for a verdict
+    payload = {"verdict": True}
+    response_8 = client.post(
+        "/game/round/vote",
+        json=payload,
+        cookies={GAME_SESSION_KEY: response_4.cookies.get(GAME_SESSION_KEY)},
+    )
+    assert response_8.status_code == 201
+    game_round_1 = response_8.json()
+    assert game_round_1["voteResults"] == [1, 0]
+
+    # Can't vote twice
+    payload = {"verdict": True}
+    response_9 = client.post(
+        "/game/round/vote",
+        json=payload,
+        cookies={GAME_SESSION_KEY: response_4.cookies.get(GAME_SESSION_KEY)},
+    )
+    assert response_9.status_code == 422
+
+    # Voting for a verdict
+    payload = {"verdict": True}
+    response_10 = client.post(
+        "/game/round/vote",
+        json=payload,
+        cookies={GAME_SESSION_KEY: response_5.cookies.get(GAME_SESSION_KEY)},
+    )
+    assert response_10.status_code == 201
+    game_round_1 = response_10.json()
+
+    assert game_round_1["voteResults"] == [2, 0]
+    assert game_round_1["status"] == "finished"
 
 
 @pytest.mark.parametrize(
