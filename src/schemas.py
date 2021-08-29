@@ -70,6 +70,14 @@ class Game(CamelModel):
         orm_mode = True
 
 
+class Vote(CamelModel):
+    verdict: bool
+    player_id: int
+
+    class Config:
+        orm_mode = True
+
+
 class GameRound(CamelModel):
     id: int
     status: Status
@@ -79,6 +87,7 @@ class GameRound(CamelModel):
     player_against: Player
     num_votes: int
     verdict: Optional[bool]
+    votes: List[Vote]
 
     class Config:
         orm_mode = True
