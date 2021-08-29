@@ -13,6 +13,8 @@
 * Player A (master) starts the first Round 
   * A statement and participants are provided
   * Participants are the players who will act for/against the statement
+* The participants will defend their positions
+  * For the given amount of time, default 90secs
 * Starts Voting process
   * Participants can't vote
   * Every Player can vote just once per round
