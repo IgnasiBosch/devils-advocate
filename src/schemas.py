@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 from pydantic import BaseModel, Field
 
@@ -71,6 +71,7 @@ class GameRound(CamelModel):
     created_at: datetime
     player_for: Player
     player_against: Player
+    vote_results: Tuple[int, int]
 
     class Config:
         orm_mode = True
@@ -83,6 +84,10 @@ class GameSession(CamelModel):
 
     class Config:
         allow_population_by_field_name = True
+
+
+class VotePayload(CamelModel):
+    verdict: bool
 
 
 class Candidate(BaseModel):

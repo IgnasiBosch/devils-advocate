@@ -1,6 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from starlette import status
+from starlette.responses import JSONResponse
 
-from src.db import Base, get_engine
+from src.config import get_settings
+from src.db import Base, get_engine, NoResultFound
 from src.routes import router
 
 
@@ -13,3 +16,33 @@ def get_app() -> FastAPI:
 
 
 app = get_app()
+
+
+@app.middleware("http")
+async def error_handling_middleware(request: Request, call_next):
+    try:
+        response = await call_next(request)
+        return response
+    except PermissionError:
+        return JSONResponse(
+            content={"error": "Not allowed"},
+            status_code=status.HTTP_401_UNAUTHORIZED,
+        )
+    except NoResultFound:
+        return JSONResponse(
+            content={"error": "Not found"},
+            status_code=status.HTTP_404_NOT_FOUND,
+        )
+    except ValueError:
+        return JSONResponse(
+            content={"error": "Value error"},
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        )
+    except Exception:
+        if get_settings().debug:
+            raise
+
+        return JSONResponse(
+            content={"error": "Something went wrong"},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )

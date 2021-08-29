@@ -3,7 +3,7 @@ from __future__ import annotations
 import secrets
 from datetime import datetime
 from enum import Enum
-from typing import Optional, Any, List
+from typing import Optional, Any, List, Set, Tuple
 
 from sqlalchemy import (
     Column,
@@ -14,7 +14,6 @@ from sqlalchemy import (
     ForeignKey,
     UniqueConstraint,
     Boolean,
-    PrimaryKeyConstraint,
 )
 from sqlalchemy.orm import relationship
 
@@ -61,12 +60,21 @@ class GameModel(Base):
     )  # type:ignore
 
     rounds: List[RoundModel] = relationship(
-        "RoundModel", order_by="RoundModel.created_at", cascade="all, delete-orphan"
+        "RoundModel",
+        order_by="RoundModel.created_at",
+        back_populates="game",
+        cascade="all, delete-orphan",
     )  # type:ignore
 
     @property
-    def join_link(self):
+    def join_link(self) -> str:
         return f"/game/join/{self.join_token}"
+
+    @property
+    def current_round(self) -> Optional[RoundModel]:
+        if self.rounds:
+            return self.rounds[-1]
+        return None
 
 
 class PlayerModel(Base):
@@ -121,3 +129,44 @@ class RoundModel(Base):
     player_against: PlayerModel = relationship(
         "PlayerModel", primaryjoin="RoundModel.player_against_id==PlayerModel.id"
     )
+
+    game: GameModel = relationship("GameModel")
+
+    votes: List[VoteModel] = relationship(
+        "VoteModel", back_populates="round", cascade="all, delete-orphan"
+    )  # type:ignore
+
+    @property
+    def participants(self) -> Set[PlayerModel]:
+        return {self.player_for, self.player_against}
+
+    @property
+    def vote_results(self) -> Tuple[int, int]:
+        total_votes = len(self.votes)
+        total_true_votes = len([_ for _ in self.votes if _.verdict is True])
+
+        return total_true_votes, total_votes - total_true_votes
+
+
+class VoteModel(Base):
+    __tablename__ = "votes"
+    __table_args__ = (
+        UniqueConstraint("player_id", "round_id", name="uniq_player_round_vote"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    verdict = Column(Boolean, nullable=False)
+    player_id = Column(ForeignKey("players.id"), nullable=False)
+    round_id = Column(
+        Integer,
+        ForeignKey(
+            "rounds.id",
+            ondelete="CASCADE",
+            name="vote_round_id_fkey",
+        ),
+        nullable=False,
+    )  # type:ignore
+
+    round: RoundModel = relationship("RoundModel")
+    player: RoundModel = relationship("PlayerModel")

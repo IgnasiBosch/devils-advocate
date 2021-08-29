@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from src.constants import Status
 from src.db import transaction, not_found_converter
-from src.models import GameModel, PlayerModel, RoundModel
+from src.models import GameModel, PlayerModel, RoundModel, VoteModel
 from src.schemas import PlayerCreate, GameCreate, JWTPayload, Candidate
 
 
@@ -47,7 +47,7 @@ def info_from_jwt_payload(
 
     player = (
         db_session.query(PlayerModel)
-        .filter_by(id=jwt_payload.player_id, game_id=jwt_payload.player_id)
+        .filter_by(id=jwt_payload.player_id, game_id=jwt_payload.game_id)
         .one()
     )
 
@@ -108,13 +108,12 @@ https://games4esl.com/controversial-debate-topics/
 """
 
 
-@not_found_converter
 def create_game_round(db_session: Session, game: GameModel) -> RoundModel:
 
-    if len(game.players) < 2:
-        raise ValueError("Not enough players")
-    # if game.rounds and game.rounds[-1].status == Status.PLAYING:
-    #     raise ValueError("A round is still in play")
+    if len(game.players) < 3:
+        raise ValueError("Not enough players. Minimum 3")
+    if game.rounds and game.rounds[-1].status == Status.PLAYING:
+        raise ValueError("A round is still in play")
 
     player_for_id, player_against_id = select_participants(round_candidates(game))
     statement = random.choice(
@@ -153,3 +152,27 @@ def select_participants(candidates: List[Candidate]) -> Tuple[int, int]:
         sorted_by_participation[:2], key=operator.attrgetter("num_for")
     )
     return sorted_by_position[0].player_id, sorted_by_position[1].player_id
+
+
+def add_vote_to_round(
+    db_session: Session, game_round: RoundModel, player: PlayerModel, verdict: bool
+):
+
+    if player in game_round.participants:
+        raise ValueError("Participants can't vote")
+    if player in {i.player for i in game_round.votes}:
+        raise ValueError("You already voted")
+
+    with transaction(db_session):
+        vote = VoteModel(verdict=verdict, player=player)
+        db_session.add(vote)
+        db_session.flush()
+
+        if len(game_round.votes) >= len(game_round.game.players) - 2:
+            game_round.status = Status.FINISHED
+
+            total_true_votes, total_false_votes = game_round.vote_results
+            if total_true_votes != total_false_votes:
+                game_round.verdict = total_true_votes > total_false_votes
+
+    return vote

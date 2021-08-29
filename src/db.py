@@ -3,28 +3,28 @@ from contextlib import contextmanager
 from functools import lru_cache
 
 from sqlalchemy.future import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base, Session
+from sqlalchemy.orm import sessionmaker, declarative_base, Session, scoped_session
 from sqlalchemy.orm.exc import (
     MultipleResultsFound as SQLAlchemyMultipleResultsFound,
     NoResultFound as SQLAlchemyNoResultFound,
 )
+
+from src.config import get_settings
 
 Base = declarative_base()
 
 
 @lru_cache
 def get_engine():
-    from src.config import get_settings
-
     return create_engine(
         get_settings().database_uri,
         pool_pre_ping=True,
-        connect_args={"check_same_thread": False},
+        # connect_args={"check_same_thread": False},
     )
 
 
 def get_session_local():
-    return sessionmaker(autocommit=False, autoflush=False, bind=get_engine())()
+    return scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=get_engine()))()
 
 
 def get_db():
@@ -59,8 +59,8 @@ def not_found_converter(func):
         try:
             return func(*args, **kwargs)
         except SQLAlchemyNoResultFound:
-            raise NoResultFound()
+            raise NoResultFound
         except SQLAlchemyMultipleResultsFound:
-            raise MultipleResultsFound()
+            raise MultipleResultsFound
 
     return wrapper

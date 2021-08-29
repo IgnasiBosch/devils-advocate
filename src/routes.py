@@ -1,4 +1,4 @@
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List
 
 from sqlalchemy.orm import Session
 from starlette import status
@@ -13,6 +13,7 @@ from src.schemas import (
     GameSession,
     NewPlayerPayload,
     GameRound,
+    VotePayload,
 )
 from fastapi import Response, Depends, APIRouter, Request, HTTPException
 
@@ -35,7 +36,7 @@ def info_from_request(
     jwt_token = request.cookies.get(GAME_SESSION_KEY)
 
     if not jwt_token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        raise PermissionError
 
     jwt_session = GameSessionJWT(settings)
     jwt_payload = jwt_session.from_token_str(jwt_token)
@@ -114,7 +115,7 @@ def join_game_handler(
 
 
 @router.post(
-    "/game/round", response_model=GameRound, status_code=status.HTTP_201_CREATED
+    "/game/rounds", response_model=GameRound, status_code=status.HTTP_201_CREATED
 )
 def start_round_handler(
     db_session: Session = Depends(get_db),
@@ -122,19 +123,36 @@ def start_round_handler(
 ):
     game, player = session_info
     if not player.is_master:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        raise PermissionError
 
     return create_game_round(db_session, game)
 
 
-@router.get("/game/round", response_model=Optional[GameRound])
+@router.get("/game/rounds/current", response_model=Optional[GameRound])
 def get_round_handler(
     session_info: Tuple[GameModel, PlayerModel] = Depends(info_from_request),
 ):
     game, player = session_info
-    if game.rounds:
-        return game.rounds[-1]
-    return None
+    return game.current_round
+
+
+@router.get("/game/rounds", response_model=List[GameRound])
+def get_round_handler(
+    session_info: Tuple[GameModel, PlayerModel] = Depends(info_from_request),
+):
+    game, player = session_info
+    return game.rounds
+
+
+@router.post(
+    "/game/round/vote", response_model=GameRound, status_code=status.HTTP_201_CREATED
+)
+def vote_round_handler(
+    vote: VotePayload,
+    db_session: Session = Depends(get_db),
+    session_info: Tuple[GameModel, PlayerModel] = Depends(info_from_request),
+):
+    game, player = session_info
 
 
 """
