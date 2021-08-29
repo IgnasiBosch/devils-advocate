@@ -122,6 +122,20 @@ def test_create_game(client):
     assert game_round_1["voteResults"] == [2, 0]
     assert game_round_1["status"] == "finished"
 
+    response_11 = client.get(
+        "/game",
+        cookies={GAME_SESSION_KEY: response_5.cookies.get(GAME_SESSION_KEY)},
+    )
+    assert response_11.status_code == 200
+    game = response_11.json()
+
+    assert game["score"] == [
+        {"name": "Kevin Lomax", "score": 1},
+        {"name": "Mary Ann Lomax", "score": 0},
+        {"name": "John Milton", "score": 0},
+        {"name": "Alexander Cullen", "score": 0},
+    ]
+
 
 @pytest.mark.parametrize(
     "candidates, expected",

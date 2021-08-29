@@ -173,6 +173,11 @@ def add_vote_to_round(
 
             total_true_votes, total_false_votes = game_round.vote_results
             if total_true_votes != total_false_votes:
-                game_round.verdict = total_true_votes > total_false_votes
+                verdict = total_true_votes > total_false_votes
+                game_round.verdict = verdict
+                if verdict is True:
+                    game_round.player_for.score += 1
+                else:
+                    game_round.player_against.score +=1
 
     return game_round
