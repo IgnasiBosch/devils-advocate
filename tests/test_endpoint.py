@@ -79,6 +79,7 @@ def test_create_game(client):
     assert response_7.status_code == 201
     game_round_1 = response_7.json()
     assert game_round_1["numVotes"] == 0
+    assert game_round_1["verdict"] is None
 
     # A Participant can't vote
     payload = {"verdict": False}
@@ -91,43 +92,45 @@ def test_create_game(client):
 
     # Voting for a verdict
     payload = {"verdict": True}
-    response_8 = client.post(
-        "/game/round/vote",
-        json=payload,
-        cookies={GAME_SESSION_KEY: response_4.cookies.get(GAME_SESSION_KEY)},
-    )
-    assert response_8.status_code == 201
-    game_round_1 = response_8.json()
-    assert game_round_1["numVotes"] == 1
-
-    # Can't vote twice
-    payload = {"verdict": True}
     response_9 = client.post(
         "/game/round/vote",
         json=payload,
         cookies={GAME_SESSION_KEY: response_4.cookies.get(GAME_SESSION_KEY)},
     )
-    assert response_9.status_code == 422
+    assert response_9.status_code == 201
+    game_round_1 = response_9.json()
+    assert game_round_1["numVotes"] == 1
+    assert game_round_1["verdict"] is None
 
-    # Voting for a verdict
+    # Can't vote twice
     payload = {"verdict": True}
     response_10 = client.post(
         "/game/round/vote",
         json=payload,
+        cookies={GAME_SESSION_KEY: response_4.cookies.get(GAME_SESSION_KEY)},
+    )
+    assert response_10.status_code == 422
+
+    # Voting for a verdict
+    payload = {"verdict": True}
+    response_11 = client.post(
+        "/game/round/vote",
+        json=payload,
         cookies={GAME_SESSION_KEY: response_5.cookies.get(GAME_SESSION_KEY)},
     )
-    assert response_10.status_code == 201
-    game_round_1 = response_10.json()
+    assert response_11.status_code == 201
+    game_round_1 = response_11.json()
 
     assert game_round_1["numVotes"] == 2
+    assert game_round_1["verdict"] is True
     assert game_round_1["status"] == "finished"
 
-    response_11 = client.get(
+    response_12 = client.get(
         "/game",
         cookies={GAME_SESSION_KEY: response_5.cookies.get(GAME_SESSION_KEY)},
     )
-    assert response_11.status_code == 200
-    game = response_11.json()
+    assert response_12.status_code == 200
+    game = response_12.json()
 
     assert game["score"] == [
         {"name": "Kevin Lomax", "score": 1},

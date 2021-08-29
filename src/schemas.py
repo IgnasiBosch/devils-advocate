@@ -78,6 +78,7 @@ class GameRound(CamelModel):
     player_for: Player
     player_against: Player
     num_votes: int
+    verdict: Optional[bool]
 
     class Config:
         orm_mode = True
