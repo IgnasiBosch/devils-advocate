@@ -2,6 +2,7 @@ from typing import Tuple, Optional, List
 
 from sqlalchemy.orm import Session
 from starlette import status
+from starlette.responses import FileResponse
 
 from src.config import Settings, get_settings
 from src.constants import GAME_SESSION_KEY
@@ -15,7 +16,7 @@ from src.schemas import (
     GameRound,
     VotePayload,
 )
-from fastapi import Response, Depends, APIRouter, Request, HTTPException
+from fastapi import Response, Depends, APIRouter, Request
 
 from src.session_token import GameSessionJWT
 from src.use_cases import (
@@ -46,8 +47,8 @@ def info_from_request(
 
 
 @router.get("/")
-def root():
-    return {"message": "Hello, World!"}
+def main():
+    return FileResponse("public/index.html")
 
 
 @router.post("/game", response_model=Game, status_code=status.HTTP_201_CREATED)

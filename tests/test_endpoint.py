@@ -1,5 +1,3 @@
-from functools import lru_cache
-
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -24,7 +22,6 @@ def client(app: FastAPI) -> TestClient:
 def test_read_root(client):
     response = client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"message": "Hello, World!"}
 
 
 def test_create_game(client):

@@ -1,5 +1,7 @@
 from fastapi import FastAPI, Request
+from fastapi.staticfiles import StaticFiles
 from starlette import status
+from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
 from src.config import get_settings
@@ -16,6 +18,14 @@ def get_app() -> FastAPI:
 
 
 app = get_app()
+app.mount("/static", StaticFiles(directory="static"), name="static")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.middleware("http")
@@ -33,7 +43,7 @@ async def error_handling_middleware(request: Request, call_next):
             content={"error": "Not found"},
             status_code=status.HTTP_404_NOT_FOUND,
         )
-    except ValueError as a:
+    except ValueError:
         return JSONResponse(
             content={"error": "Value error"},
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
