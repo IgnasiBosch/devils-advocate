@@ -53,18 +53,12 @@ class Player(CamelModel):
         orm_mode = True
 
 
-class Score(CamelModel):
-    name: str
-    score: int
-
-
 class Game(CamelModel):
     id: int
     status: Status
     secs_per_round: int
     join_link: str
     players: List[Player]
-    score: List[Score]
 
     class Config:
         orm_mode = True

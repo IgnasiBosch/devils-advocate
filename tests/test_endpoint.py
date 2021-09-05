@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from src.constants import GAME_SESSION_KEY
+from src.db import Base, get_engine
 from src.main import app as orig_get_app
 from src.schemas import Candidate
 from src.use_cases import select_participants
@@ -19,12 +20,18 @@ def client(app: FastAPI) -> TestClient:
     return TestClient(app)
 
 
+@pytest.fixture
+def clear_all():
+    yield
+    Base.metadata.drop_all(get_engine())
+
+
 def test_read_root(client):
     response = client.get("/")
     assert response.status_code == 200
 
 
-def test_create_game(client):
+def test_full_game_scenario(client, clear_all):
 
     # Creating a Game
     payload = {"player": {"name": "Kevin Lomax"}, "game": {"secsPerRound": 30}}
@@ -129,11 +136,11 @@ def test_create_game(client):
     assert response_12.status_code == 200
     game = response_12.json()
 
-    assert game["score"] == [
-        {"name": "Kevin Lomax", "score": 1},
-        {"name": "Mary Ann Lomax", "score": 0},
-        {"name": "John Milton", "score": 0},
-        {"name": "Alexander Cullen", "score": 0},
+    assert game["players"] == [
+        {"id": 1, "name": "Kevin Lomax", "score": 1},
+        {"id": 2, "name": "Mary Ann Lomax", "score": 0},
+        {"id": 3, "name": "John Milton", "score": 0},
+        {"id": 4, "name": "Alexander Cullen", "score": 0},
     ]
 
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 import secrets
 from datetime import datetime
 from enum import Enum
-from typing import Optional, Any, List, Set, Tuple, Dict, Union
+from typing import Optional, Any, List, Set
 
 from sqlalchemy import (
     Column,
@@ -75,10 +75,6 @@ class GameModel(Base):
         if self.rounds:
             return self.rounds[-1]
         return None
-
-    @property
-    def score(self) -> List[Dict[str, Union[str, int]]]:
-        return [{"name": i.name, "score": i.score} for i in self.players]
 
 
 class PlayerModel(Base):
