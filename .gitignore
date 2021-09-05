@@ -26,6 +26,18 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+.DS_Store
+node_modules
+/dist
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
