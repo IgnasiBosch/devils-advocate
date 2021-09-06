@@ -8,7 +8,7 @@ export class GameManager {
   ): Promise<Game> {
     const normalizedPayload = GameManager.normalizePayload(name, secs);
     const { data: response } = await APIDataConsumer.makePostRequest(
-      normalizedPayload
+      normalizedPayload, 'game'
     );
     return Game.fromJSON(response);
   }

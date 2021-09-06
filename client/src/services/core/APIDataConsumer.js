@@ -7,8 +7,8 @@ class APIDataConsumer {
     makePostRequest(params, endpoint) {
         return axios.post(`${this.host}/${endpoint}`, params);
     }
-    makeGetRequest() {
-        return axios.get(this.host);
+    makeGetRequest(endpoint) {
+        return axios.get(`${this.host}/${endpoint}`);
     }
 }
 export default new APIDataConsumer();

@@ -40,8 +40,8 @@ export default defineComponent({
     const createGame = () => {
       isGameCreated.value = true;
     };
-    const initiateGame = () => {
-      backEndPayload.value = GameManager.requestGameData(
+    const initiateGame = async () => {
+      backEndPayload.value = await GameManager.requestGameData(
         playerName.value,
         secsPerRound.value
       );

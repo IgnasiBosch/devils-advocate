@@ -11,8 +11,8 @@ class APIDataConsumer {
     return axios.post(`${this.host}/${endpoint}`, params);
   }
 
-  makeGetRequest() {
-    return axios.get(this.host);
+  makeGetRequest(endpoint: string) {
+    return axios.get(`${this.host}/${endpoint}`);
   }
 }
 

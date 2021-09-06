@@ -3,7 +3,7 @@ import { Game } from '../types/game.interface';
 export class GameManager {
     static async requestGameData(name, secs) {
         const normalizedPayload = GameManager.normalizePayload(name, secs);
-        const { data: response } = await APIDataConsumer.makePostRequest(normalizedPayload);
+        const { data: response } = await APIDataConsumer.makePostRequest(normalizedPayload, 'game');
         return Game.fromJSON(response);
     }
     static normalizePayload(name, secs) {
