@@ -1,8 +1,8 @@
-aiofiles==0.7.0
-fastapi==0.68.1
-python-dotenv==0.19.0
+aiofiles==0.8.0
+fastapi==0.70.0
+python-dotenv==0.19.2
 python-jose==3.3.0
 pytest
 requests
-SQLAlchemy==1.4.23
-uvicorn==0.15.0
+SQLAlchemy==1.4.27
+uvicorn==0.16.0

@@ -131,7 +131,7 @@ def start_round_handler(
 
 
 @router.get("/game/rounds/current", response_model=Optional[GameRound])
-def get_round_handler(
+def get_current_round_handler(
     session_info: Tuple[GameModel, PlayerModel] = Depends(info_from_request),
 ):
     game, player = session_info
